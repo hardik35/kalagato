@@ -33,15 +33,13 @@ class App extends React.Component {
     this.setState({ timeSlotsArr });
   }
 
-  eventsBoxesStyle(eventStartTime, eventEndTime, eventIndex) {
+  eventsBoxesStyle(eventStartTime, eventEndTime, effColliders, currEventIndex) {
     const startTime = new Date(eventStartTime);
     const endTime = new Date(eventEndTime);
 
     const startTimeHours = startTime.getHours();
     const startTimeMinutesinHours = Number((startTime.getMinutes() / 60).toFixed(2));
     const startTimeInHours = startTimeHours + startTimeMinutesinHours;
-
-    // console.log(startTimeInHours)
 
     const endTimeHours = endTime.getHours();
     const endTimeMinutesinHours = Number((endTime.getMinutes() / 60).toFixed(2));
@@ -50,13 +48,24 @@ class App extends React.Component {
     const topSpace = ((startTimeInHours - 9) * 60);
     const height = (endTimeInHours - startTimeInHours) * 60;
 
+    let widthUtilisedByPreviousOnes = 0;
+
+    if (document.getElementById('relativePosition') !== null) {
+      console.log(document.getElementById('relativePosition').childNodes[0])
+      for (let i = 0; i < currEventIndex; i++) {
+        widthUtilisedByPreviousOnes += Number(document.getElementById('relativePosition').childNodes[i].style.width.replace('%', ''));
+      }
+    }
+
+    
+
     return {
       position: 'absolute',
       border: '1px solid red',
       top: `${topSpace}px`,
       height: `${height}px`,
-      width: '100%',
-      // left: collidingWith <= 1 || collidingWith === 3 ? '0%' : `50%`
+      width: effColliders ? `${( 1 / ( 1+ effColliders) * 100)}%` : `100%`,
+      left: (widthUtilisedByPreviousOnes % 100 === 0) ? '0%' : `${widthUtilisedByPreviousOnes % 100}%`
     }
 
   }
@@ -74,11 +83,9 @@ class App extends React.Component {
           }
         </div>
         <div>
-          <div className="relativePosition">
+          <div id="relativePosition">
             {this.state.eventsDetails.map( (event, index) => 
-              <div style={this.eventsBoxesStyle(event.startTime, event.endTime, index)} key={index}>
-                {event.collidingIndexes}
-              </div> 
+              <div style={this.eventsBoxesStyle(event.startTime, event.endTime, event.effectiveColliders, index)} key={index}/>
             )}
           </div>
         </div>
